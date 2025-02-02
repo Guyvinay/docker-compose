@@ -17,6 +17,7 @@ services:
       POSTGRES_USER: myuser
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydatabase
+      POSTGRES_MAX_CONNECTIONS: 500  # increase connection limit to 500.
 #    env_file:
 #      - ./postgres.env
 
