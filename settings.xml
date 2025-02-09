@@ -1,0 +1,51 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <!-- Servers: Authentication details for deployment -->
+    <!-- This section stores your credentials for Nexus so Maven can access the repository securely -->
+    <servers>
+        <server>
+            <id>nexus</id> <!-- This ID must match the one used in 'distributionManagement' in pom.xml -->
+            <username>admin</username> <!-- Nexus admin username -->
+            <password>admin123</password> <!-- Nexus admin password -->
+        </server>
+    </servers>
+
+    <!-- Mirrors: Redirect all dependency downloads to Nexus -->
+    <!-- This ensures that Maven fetches all dependencies from your local Nexus server instead of directly from the internet (e.g., Maven Central) -->
+    <mirrors>
+        <mirror>
+            <id>nexus</id> <!-- Unique ID for the mirror -->
+            <mirrorOf>*</mirrorOf> <!-- Applies to all repositories; redirects all dependency fetches to Nexus -->
+            <url>http://localhost:8081/repository/maven-public/</url> <!-- URL to your Nexus repository -->
+        </mirror>
+    </mirrors>
+
+    <!-- Profiles: Define repositories for dependency resolution -->
+    <!-- This profile defines how dependencies are fetched from Nexus and enables specific repositories -->
+    <profiles>
+        <profile>
+            <id>nexus-profile</id> <!-- Unique ID for this profile -->
+            <repositories>
+                <repository>
+                    <id>nexus</id> <!-- Repository ID that matches the one used in the server -->
+                    <url>http://localhost:8081/repository/maven-public/</url> <!-- URL of the Nexus public repository -->
+                    <releases>
+                        <enabled>true</enabled> <!-- Enables the retrieval of release dependencies -->
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled> <!-- Disables the retrieval of snapshot dependencies -->
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+
+    <!-- Activate the profile globally to ensure Maven uses the Nexus profile during builds -->
+    <activeProfiles>
+        <activeProfile>nexus-profile</activeProfile>
+    </activeProfiles>
+
+</settings>
