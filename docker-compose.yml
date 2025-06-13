@@ -22,53 +22,53 @@ services:
     env_file:
       - ./postgres.env
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
-    container_name: elasticsearch
-    restart: always
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    networks:
-      - my_network
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.14.0
-    container_name: kibana
-    restart: always
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - xpack.security.enabled=false
-    volumes:
-      - kibana_data:/usr/share/kibana/data
-    networks:
-      - my_network
-
-  rabbitmq:
-    image: rabbitmq:3.12-management
-    container_name: rabbitmq
-    restart: always
-    ports:
-      - '5672:5672'   # Web UI
-      - '15672:15672' # AMQP protocol
-    #    env_file:
-    #      - ./rabbit.env
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - my_network
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+#    container_name: elasticsearch
+#    restart: always
+#    environment:
+#      - discovery.type=single-node
+#      - xpack.security.enabled=false
+#    ports:
+#      - "9200:9200"
+#      - "9300:9300"
+#    volumes:
+#      - es_data:/usr/share/elasticsearch/data
+#    networks:
+#      - my_network
+#
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:8.14.0
+#    container_name: kibana
+#    restart: always
+#    ports:
+#      - "5601:5601"
+#    depends_on:
+#      - elasticsearch
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - xpack.security.enabled=false
+#    volumes:
+#      - kibana_data:/usr/share/kibana/data
+#    networks:
+#      - my_network
+#
+#  rabbitmq:
+#    image: rabbitmq:3.12-management
+#    container_name: rabbitmq
+#    restart: always
+#    ports:
+#      - '5672:5672'   # Web UI
+#      - '15672:15672' # AMQP protocol
+#    #    env_file:
+#    #      - ./rabbit.env
+#    volumes:
+#      - rabbitmq_data:/var/lib/rabbitmq
+#    networks:
+#      - my_network
+#    environment:
+#      RABBITMQ_DEFAULT_USER: guest
+#      RABBITMQ_DEFAULT_PASS: guest
 
 
   jenkins:
@@ -277,12 +277,12 @@ services:
 volumes:
   pg_data:
 #  pgadmin_data:
-  rabbitmq_data:
-  es_data:
-  kibana_data:
-#  mongo_data:
+#  rabbitmq_data:/
+#  es_data:
+#  kibana_data:
   jenkins_home:
   nexus_data:
+#  mongo_data:
 #  kafka_data:
 #  zookeeper_data:
 #  prometheus_data:  # Volume for Prometheus metrics storage
