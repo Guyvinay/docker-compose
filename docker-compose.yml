@@ -36,7 +36,7 @@ services:
 #      - es_data:/usr/share/elasticsearch/data
 #    networks:
 #      - my_network
-#
+
 #  kibana:
 #    image: docker.elastic.co/kibana/kibana:8.14.0
 #    container_name: kibana
@@ -102,81 +102,94 @@ services:
       - INSTALL4J_ADD_VM_PARAMS=-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=1024m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
       - NEXUS_SECURITY_RANDOMPASSWORD=false  # Disables random admin password, default: admin/admin123
 
-  zookeeper:
-    image: confluentinc/cp-zookeeper:7.2.1
-    container_name: zookeeper
-    restart: always
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
+  redis:
+    image: redis:7.2-alpine # Specifies the Redis Docker image to use
+    container_name: redis # Sets a custom name for the container
+    restart: always # Ensures the container restarts automatically if it stops
     ports:
-      - "2181:2181"
+      - "6379:6379" # default Redis port, maps port 6379 on the host to port 6379 in the container
+    networks:
+      - my_network
+    command: redis-server --appendonly yes
+    # `--appendonly yes` enables persistence (AOF mode) so data survives container restarts.
     volumes:
-      - zookeeper_data:/var/lib/zookeeper
-    networks:
-      - my_network
+      - redis_data:/data # Mounts a named volume for data persistence
 
-  kafka:
-    image: confluentinc/cp-kafka:7.2.1  # ✅ Use ZooKeeper-compatible version
-    container_name: kafka
-    restart: always
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    ports:
-      - "9092:9092"
-    volumes:
-      - kafka_data:/var/lib/kafka/data
-    networks:
-      - my_network
-
-  kafka-ui:
-    image: provectuslabs/kafka-ui:latest
-    container_name: kafka-ui
-    restart: always
-    ports:
-      - "8085:8080"  # Access at http://localhost:8085
-    environment:
-      - KAFKA_CLUSTERS_0_NAME=local-kafka
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9093
-      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
-    depends_on:
-      - kafka
-      - zookeeper
-    networks:
-      - my_network
+#  zookeeper:
+#    image: confluentinc/cp-zookeeper:7.2.1
+#    container_name: zookeeper
+#    restart: always
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 2181
+#      ZOOKEEPER_TICK_TIME: 2000
+#    ports:
+#      - "2181:2181"
+#    volumes:
+#      - zookeeper_data:/var/lib/zookeeper
+#    networks:
+#      - my_network
+#
+#  kafka:
+#    image: confluentinc/cp-kafka:7.2.1  # Use ZooKeeper-compatible version
+#    container_name: kafka
+#    restart: always
+#    depends_on:
+#      - zookeeper
+#    environment:
+#      KAFKA_BROKER_ID: 1
+#      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
+#      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_INTERNAL://0.0.0.0:9093
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+#      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#    ports:
+#      - "9092:9092"
+#    volumes:
+#      - kafka_data:/var/lib/kafka/data
+#    networks:
+#      - my_network
+#
+#  kafka-ui:
+#    image: provectuslabs/kafka-ui:latest
+#    container_name: kafka-ui
+#    restart: always
+#    ports:
+#      - "8085:8080"  # Access at http://localhost:8085
+#    environment:
+#      - KAFKA_CLUSTERS_0_NAME=local-kafka
+#      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9093
+#      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+#    depends_on:
+#      - kafka
+#      - zookeeper
+#    networks:
+#      - my_network
 
 
 # Spring Boot Application Service
-  dev-auth:
-    build:
-      context: ../dev-takeaway/backend/dev-auth  # Build from the current directory (where the Dockerfile is located)
-      dockerfile: Dockerfile            # <- This is optional if named Dockerfile
-    image: dev-auth:latest              # <- Tag image after build
-    container_name: dev-auth
-    restart: always  # Restart policy for the application
-    ports:
-      - "8088:8080"  # Map container port 8080 to host port 8088 for accessing the app
-    volumes:
-      - ./logs:/app/logs  # Mounting the logs directory (optional)
-    networks:
-      - my_network
-    env_file:
-      - ./dev-auth/dev-auth.env
-    depends_on:
-      - postgres
-    environment:
-      SPRING_PROFILES_ACTIVE: "prod"  # Optional: Set active profile for Spring Boot (e.g., dev, prod)
-      DATABASE_URL: jdbc:postgresql://postgres:5432/dev_auth
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
+#  dev-auth:
+#    build:
+#      context: ../dev-takeaway/backend/dev-auth  # Build from the current directory (where the Dockerfile is located)
+#      dockerfile: Dockerfile            # <- This is optional if named Dockerfile
+#    image: dev-auth:latest              # <- Tag image after build
+#    container_name: dev-auth
+#    restart: always  # Restart policy for the application
+#    ports:
+#      - "8088:8080"  # Map container port 8080 to host port 8088 for accessing the app
+#    volumes:
+#      - ./logs:/app/logs  # Mounting the logs directory (optional)
+#    networks:
+#      - my_network
+#    env_file:
+#      - ./dev-auth/dev-auth.env
+#    depends_on:
+#      - postgres
+#    environment:
+#      SPRING_PROFILES_ACTIVE: "prod"  # Optional: Set active profile for Spring Boot (e.g., dev, prod)
+#      DATABASE_URL: jdbc:postgresql://postgres:5432/dev_auth
+#      POSTGRES_USER: postgres
+#      POSTGRES_PASSWORD: root
 
 #  pgadmin:
 #    image: dpage/pgadmin4
@@ -231,9 +244,8 @@ services:
 #    ports:
 #      - "8080:80"
 #    volumes:
-#      - ./nginx.conf:/etc/nginx/nginx.conf  # Custom NGINX config
+#      - ./nginx.conf:/etc/nginx/nginx.conf  # Custom NGINX configc
 #      - ./html:/usr/share/nginx/html        # Serve custom HTML files
-#
 
 #  prometheus:
 #    image: prom/prometheus:latest
@@ -275,16 +287,16 @@ services:
 
 volumes:
   pg_data:
-#  es_data:
-#  kibana_data:
   jenkins_home:
   nexus_data:
-  zookeeper_data:
-  kafka_data:
+  redis_data:
+#  es_data:
+#  kibana_data:
+#  zookeeper_data:
+#  kafka_data:
 #  pgadmin_data:
 #  rabbitmq_data:
 #  mongo_data:
-#  kafka_data:
 #  prometheus_data:  # Volume for Prometheus metrics storage
 #  grafana_data:  # Volume for Grafana dashboards & config
 
