@@ -17,8 +17,8 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
-      POSTGRES_DB: init_db
-      POSTGRES_MAX_CONNECTIONS: 500  # increase connection limit to 500.
+#      POSTGRES_DB: init_db
+      POSTGRES_MAX_CONNECTIONS: 5000  # increase connection limit to 500.
     env_file:
       - ./postgres.env
 
@@ -53,54 +53,66 @@ services:
 #    networks:
 #      - my_network
 
-#  rabbitmq:
-#    image: rabbitmq:3.12-management
-#    container_name: rabbitmq
-#    restart: always
-#    ports:
-#      - '5672:5672'   # Web UI
-#      - '15672:15672' # AMQP protocol
-#    #    env_file:
-#    #      - ./rabbit.env
-#    volumes:
-#      - rabbitmq_data:/var/lib/rabbitmq
-#    networks:
-#      - my_network
-#    environment:
-#      RABBITMQ_DEFAULT_USER: guest
-#      RABBITMQ_DEFAULT_PASS: guest
-
-
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
-    restart: always
-    privileged: true
-    user: root
-    ports:
-      - "8090:8080"  # Jenkins UI
-      - "50000:50000" # Agent communication
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use Docker
-    networks:
-      - my_network
-
-  nexus:
-    image: sonatype/nexus3
-    container_name: nexus
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: rabbitmq
     restart: always
     ports:
-      - "8081:8081"  # Nexus UI
-      - "8082:8082"  # Repository Port
-      - "5000:5000"
+      - '5672:5672'   # Web UI
+      - '15672:15672' # AMQP protocol
+    #    env_file:
+    #      - ./rabbit.env
     volumes:
-      - nexus_data:/nexus-data
+      - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - my_network
     environment:
-      - INSTALL4J_ADD_VM_PARAMS=-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=1024m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
-      - NEXUS_SECURITY_RANDOMPASSWORD=false  # Disables random admin password, default: admin/admin123
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+#  redis:
+#    image: redis:7.2-alpine # Specifies the Redis Docker image to use
+#    container_name: redis # Sets a custom name for the container
+#    restart: always # Ensures the container restarts automatically if it stops
+#    ports:
+#      - "6379:6379" # default Redis port, maps port 6379 on the host to port 6379 in the container
+#    networks:
+#      - my_network
+#    command: redis-server --appendonly yes
+#    # `--appendonly yes` enables persistence (AOF mode) so data survives container restarts.
+#    volumes:
+#      - redis_data:/data # Mounts a named volume for data persistence
+
+#  jenkins:
+#    image: jenkins/jenkins:lts
+#    container_name: jenkins
+#    restart: always
+#    # privileged: true
+#    user: root
+#    ports:
+#      - "8090:8080"  # Jenkins UI
+#      - "50000:50000" # Agent communication
+#    volumes:
+#      - jenkins_home:/var/jenkins_home
+#      # - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use Docker
+#    networks:
+#      - my_network
+#
+#  nexus:
+#    image: sonatype/nexus3
+#    container_name: nexus
+#    restart: always
+#    ports:
+#      - "8081:8081"  # Nexus UI
+#      - "8082:8082"  # Repository Port
+#      - "5000:5000"
+#    volumes:
+#      - nexus_data:/nexus-data
+#    networks:
+#      - my_network
+#    environment:
+#      - INSTALL4J_ADD_VM_PARAMS=-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=1024m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
+#      - NEXUS_SECURITY_RANDOMPASSWORD=false  # Disables random admin password, default: admin/admin123
 
   redis:
     image: redis:7.2-alpine # Specifies the Redis Docker image to use
@@ -202,6 +214,33 @@ services:
 #      POSTGRES_USER: postgres
 #      POSTGRES_PASSWORD: root
 
+  # Spring Boot Application Service
+  http-adapter:
+     build:
+       context: ../../../mdo/repo/mdo-http-adapter  # Build from the current directory (where the Dockerfile is located)
+       dockerfile: Dockerfile            # <- This is optional if named Dockerfile
+     image: http-adapter:latest              # <- Tag image after build
+     container_name: http-adapter
+     restart: always  # Restart policy for the application
+     ports:
+       - "8088:8082"  # Map container port 8080 to host port 8088 for accessing the app
+     networks:
+       - my_network
+     env_file:
+       - ./dev-auth/dev-auth.env
+       - ./rabbitmq.env
+       - ./data-enrichment.env   # add this new file
+     depends_on:
+       - postgres
+       - rabbitmq
+     environment:
+       - DATABASE_URL=jdbc:postgresql://postgres:5432/http_adapter
+       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/http_adapter
+       - POSTGRES_USER=postgres
+       - POSTGRES_PASSWORD=root
+       - RABBIT_URL=rabbitmq:15672
+       - SPRING_RABBITMQ_HOST=rabbitmq
+
 #  pgadmin:
 #    image: dpage/pgadmin4
 #    container_name: pgadmin
@@ -298,8 +337,9 @@ services:
 
 volumes:
   pg_data:
-  jenkins_home:
-  nexus_data:
+  rabbitmq_data:
+#  redis_data:
+#  nexus_data:
   redis_data:
   keycloak_data:
 #  es_data:
@@ -307,7 +347,6 @@ volumes:
 #  zookeeper_data:
 #  kafka_data:
 #  pgadmin_data:
-#  rabbitmq_data:
 #  mongo_data:
 #  prometheus_data:  # Volume for Prometheus metrics storage
 #  grafana_data:  # Volume for Grafana dashboards & config
