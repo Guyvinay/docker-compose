@@ -10,6 +10,7 @@ services:
     restart: always # | unless-stopped
     ports:
       - "5432:5432"
+#    entrypoint: ["sleep", "3600"]   # disables Postgres startup
     volumes:
       - pg_data:/var/lib/postgresql/data
     networks:
@@ -22,52 +23,52 @@ services:
     env_file:
       - ./postgres.env
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
-    container_name: elasticsearch
-    restart: always
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.ml.enabled=false
-      - xpack.monitoring.collection.enabled=false
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    networks:
-      - my_network
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2g
-        reservations:
-          memory: 1g
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+#    container_name: elasticsearch
+#    restart: always
+#    environment:
+#      - discovery.type=single-node
+#      - xpack.security.enabled=false
+#      - xpack.ml.enabled=false
+#      - xpack.monitoring.collection.enabled=false
+#      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+#    ports:
+#      - "9200:9200"
+#      - "9300:9300"
+#    volumes:
+#      - es_data:/usr/share/elasticsearch/data
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '2.0'
+#          memory: 2g
+#        reservations:
+#          memory: 1g
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.14.0
-    container_name: kibana
-    restart: always
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - xpack.security.enabled=false
-      - NODE_OPTIONS=--max-old-space-size=512   # limit Node.js memory usage
-    volumes:
-      - kibana_data:/usr/share/kibana/data
-    networks:
-      - my_network
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:8.14.0
+#    container_name: kibana
+#    restart: always
+#    ports:
+#      - "5601:5601"
+#    depends_on:
+#      - elasticsearch
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - xpack.security.enabled=false
+#      - NODE_OPTIONS=--max-old-space-size=512   # limit Node.js memory usage
+#    volumes:
+#      - kibana_data:/usr/share/kibana/data
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1.0'
+#          memory: 1g
 
   rabbitmq:
     image: rabbitmq:3.12-management
@@ -86,18 +87,18 @@ services:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
 
-  redis:
-    image: redis:7.2-alpine # Specifies the Redis Docker image to use
-    container_name: redis # Sets a custom name for the container
-    restart: always # Ensures the container restarts automatically if it stops
-    ports:
-      - "6379:6379" # default Redis port, maps port 6379 on the host to port 6379 in the container
-    networks:
-      - my_network
-    command: redis-server --appendonly yes
-    # `--appendonly yes` enables persistence (AOF mode) so data survives container restarts.
-    volumes:
-      - redis_data:/data # Mounts a named volume for data persistence
+#  redis:
+#    image: redis:7.2-alpine # Specifies the Redis Docker image to use
+#    container_name: redis # Sets a custom name for the container
+#    restart: always # Ensures the container restarts automatically if it stops
+#    ports:
+#      - "6379:6379" # default Redis port, maps port 6379 on the host to port 6379 in the container
+#    networks:
+#      - my_network
+#    command: redis-server --appendonly yes
+#    # `--appendonly yes` enables persistence (AOF mode) so data survives container restarts.
+#    volumes:
+#      - redis_data:/data # Mounts a named volume for data persistence
 
 #  jenkins:
 #    image: jenkins/jenkins:lts
@@ -114,21 +115,21 @@ services:
 #    networks:
 #      - my_network
 #
-  nexus:
-    image: sonatype/nexus3
-    container_name: nexus
-    restart: always
-    ports:
-      - "8081:8081"  # Nexus UI
-      - "8082:8082"  # Repository Port
-      - "5000:5000"
-    volumes:
-      - nexus_data:/nexus-data
-    networks:
-      - my_network
-    environment:
-      - INSTALL4J_ADD_VM_PARAMS=-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=1024m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
-      - NEXUS_SECURITY_RANDOMPASSWORD=false  # Disables random admin password, default: admin/admin123
+#  nexus:
+#    image: sonatype/nexus3
+#    container_name: nexus
+#    restart: always
+#    ports:
+#      - "8081:8081"  # Nexus UI
+#      - "8082:8082"  # Repository Port
+#      - "5000:5000"
+#    volumes:
+#      - nexus_data:/nexus-data
+#    networks:
+#      - my_network
+#    environment:
+#      - INSTALL4J_ADD_VM_PARAMS=-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=1024m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
+#      - NEXUS_SECURITY_RANDOMPASSWORD=false  # Disables random admin password, default: admin/admin123
 
 #  redis:
 #    image: redis:7.2-alpine # Specifies the Redis Docker image to use
@@ -207,28 +208,36 @@ services:
 #      - my_network
 
 # Spring Boot Application Service
-#  dev-auth:
-#    build:
-#      context: ../dev-takeaway/backend/dev-auth  # Build from the current directory (where the Dockerfile is located)
-#      dockerfile: Dockerfile            # <- This is optional if named Dockerfile
-#    image: dev-auth:latest              # <- Tag image after build
-#    container_name: dev-auth
-#    restart: always  # Restart policy for the application
-#    ports:
-#      - "8088:8080"  # Map container port 8080 to host port 8088 for accessing the app
-#    volumes:
-#      - ./logs:/app/logs  # Mounting the logs directory (optional)
-#    networks:
-#      - my_network
-#    env_file:
-#      - ./dev-auth/dev-auth.env
-#    depends_on:
-#      - postgres
-#    environment:
-#      SPRING_PROFILES_ACTIVE: "prod"  # Optional: Set active profile for Spring Boot (e.g., dev, prod)
-#      DATABASE_URL: jdbc:postgresql://postgres:5432/dev_auth
-#      POSTGRES_USER: postgres
-#      POSTGRES_PASSWORD: root
+  dev-auth-server:
+    build:
+      context: ../dev-microservices-lab/backend/dev-auth-server  # Build from the current directory (where the Dockerfile is located)
+      dockerfile: Dockerfile            # <- This is optional if named Dockerfile
+    image: dev-auth-server:latest              # <- Tag image after build
+    container_name: dev-auth
+    restart: always  # Restart policy for the application
+    ports:
+      - "8000:8000"  # Map container port 8080 to host port 8088 for accessing the app
+    volumes:
+      - ./logs:/app/logs  # Mounting the logs directory (optional)
+      - ./newrelic:/newrelic
+    networks:
+      - my_network
+    env_file:
+      - ./dev-auth/dev-auth.env
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+     - DATABASE_URL=jdbc:postgresql://postgres:5432/dev_auth_server
+     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/dev_auth_server
+     - POSTGRES_USER=postgres
+     - POSTGRES_PASSWORD=root
+     - RABBIT_URL=rabbitmq:15672
+     - SPRING_RABBITMQ_HOST=rabbitmq
+     - JAVA_TOOL_OPTIONS=-javaagent:/newrelic/newrelic.jar
+     - NEW_RELIC_APP_NAME=service-a
+     - NEW_RELIC_LICENSE_KEY=${licence_key}
+
 
   # Spring Boot Application Service
 #  http-adapter:
@@ -354,11 +363,12 @@ services:
 volumes:
   pg_data:
   rabbitmq_data:
-  redis_data:
-  nexus_data:
+  newrelic:
+#  redis_data:
+#  nexus_data:
 #  keycloak_data:
-  es_data:
-  kibana_data:
+#  es_data:
+#  kibana_data:
 #  zookeeper_data:
 #  kafka_data:
 #  pgadmin_data:
