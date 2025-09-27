@@ -1,16 +1,32 @@
 global:
-  scrape_interval: 5s  # Collect metrics every 5 seconds
+  scrape_interval: 15s   # scrape every 15 seconds
+  evaluation_interval: 15s
 
 scrape_configs:
-  - job_name: "prometheus"
+  # Prometheus itself
+  - job_name: 'prometheus'
     static_configs:
-      - targets: ["localhost:9090"]
+      - targets: ['localhost:9090']
 
-  - job_name: "node_exporter"  # Collect system metrics
+  # Node exporter
+  - job_name: 'node-exporter'
     static_configs:
-      - targets: ["node-exporter:9100"]
+      - targets: ['node-exporter:9100']
 
-  - job_name: "spring-boot-app"
-    metrics_path: "/actuator/prometheus"
+  # Dev Auth Server
+  - job_name: 'dev-auth-server'
+    metrics_path: '/dev-auth-server/actuator/prometheus'
     static_configs:
-      - targets: ["spring-boot-app:8080"]
+      - targets: ['dev-auth-server:8000']
+
+#  # Dev Sandbox
+#  - job_name: 'dev-sandbox'
+#    metrics_path: '/actuator/prometheus'
+#    static_configs:
+#      - targets: ['host.docker.internal:8082']
+#
+#  # Dev Integration
+#  - job_name: 'dev-integration'
+#    metrics_path: '/actuator/prometheus'
+#    static_configs:
+#      - targets: ['host.docker.internal:8083']
