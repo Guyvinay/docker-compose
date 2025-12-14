@@ -48,27 +48,27 @@ services:
         reservations:
           memory: 1g
 
-#  kibana:
-#    image: docker.elastic.co/kibana/kibana:8.14.0
-#    container_name: kibana
-#    restart: always
-#    ports:
-#      - "5601:5601"
-#    depends_on:
-#      - elasticsearch
-#    environment:
-#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-#      - xpack.security.enabled=false
-#      - NODE_OPTIONS=--max-old-space-size=512   # limit Node.js memory usage
-#    volumes:
-#      - kibana_data:/usr/share/kibana/data
-#    networks:
-#      - my_network
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '1.0'
-#          memory: 1g
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.14.0
+    container_name: kibana
+    restart: always
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - xpack.security.enabled=false
+      - NODE_OPTIONS=--max-old-space-size=512   # limit Node.js memory usage
+    volumes:
+      - kibana_data:/usr/share/kibana/data
+    networks:
+      - my_network
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1g
 
   rabbitmq:
     image: rabbitmq:3.12-management
@@ -103,21 +103,21 @@ services:
     volumes:
       - redis_data:/data # Mounts a named volume for data persistence
 
-#  jenkins:
-#    image: jenkins/jenkins:lts
-#    container_name: jenkins
-#    restart: always
-#    # privileged: true
-#    user: root
-#    ports:
-#      - "8090:8080"  # Jenkins UI
-#      - "50000:50000" # Agent communication
-#    volumes:
-#      - jenkins_home:/var/jenkins_home
-#      # - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use Docker
-#    networks:
-#      - my_network
-#
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    restart: always
+    # privileged: true
+    user: root
+    ports:
+      - "8090:8080"  # Jenkins UI
+      - "50000:50000" # Agent communication
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      # - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use Docker
+    networks:
+      - my_network
+
   nexus:
     image: sonatype/nexus3
     container_name: nexus
@@ -211,40 +211,40 @@ services:
 #      - my_network
 
 # Spring Boot Application Service
-  dev-auth-server:
-    build:
-      context: ../dev-microservices-lab/backend/dev-auth-server  # Build from the current directory (where the Dockerfile is located)
-      dockerfile: Dockerfile            # <- This is optional if named Dockerfile
-    image: dev-auth-server:master              # <- Tag image after build
-    container_name: dev-auth-server
-    restart: always  # Restart policy for the application
-    ports:
-      - "8000:8000"  # Map container port 8080 to host port 8088 for accessing the app
-#    volumes:
-#      - ./logs:/app/logs  # Mounting the logs directory (optional)
-#      - ./newrelic:/newrelic
-    networks:
-      - my_network
-    env_file:
-      - ./dev-auth/dev-auth.env
-    depends_on:
-      - postgres
-      - rabbitmq
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "50m"
-        max-file: "3"
-    environment:
-     - DATABASE_URL=jdbc:postgresql://postgres:5432/dev_auth_server
-     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/dev_auth_server
-     - POSTGRES_USER=postgres
-     - POSTGRES_PASSWORD=root
-     - RABBIT_URL=rabbitmq:15672
-     - SPRING_RABBITMQ_HOST=rabbitmq
-     - RABBIT_HOST=rabbitmq
-     - RABBIT_PORT=5672
-     - RABBIT_MANAGEMENT_BASE_URL=http://rabbitmq:15672/api
+#  dev-auth-server:
+#    build:
+#      context: ../dev-microservices-lab/backend/dev-auth-server  # Build from the current directory (where the Dockerfile is located)
+#      dockerfile: Dockerfile            # <- This is optional if named Dockerfile
+#    image: dev-auth-server:master              # <- Tag image after build
+#    container_name: dev-auth-server
+#    restart: always  # Restart policy for the application
+#    ports:
+#      - "8000:8000"  # Map container port 8080 to host port 8088 for accessing the app
+##    volumes:
+##      - ./logs:/app/logs  # Mounting the logs directory (optional)
+##      - ./newrelic:/newrelic
+#    networks:
+#      - my_network
+#    env_file:
+#      - ./dev-auth/dev-auth.env
+#    depends_on:
+#      - postgres
+#      - rabbitmq
+#    logging:
+#      driver: "json-file"
+#      options:
+#        max-size: "50m"
+#        max-file: "3"
+#    environment:
+#     - DATABASE_URL=jdbc:postgresql://postgres:5432/dev_auth_server
+#     - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/dev_auth_server
+#     - POSTGRES_USER=postgres
+#     - POSTGRES_PASSWORD=root
+#     - RABBIT_URL=rabbitmq:15672
+#     - SPRING_RABBITMQ_HOST=rabbitmq
+#     - RABBIT_HOST=rabbitmq
+#     - RABBIT_PORT=5672
+#     - RABBIT_MANAGEMENT_BASE_URL=http://rabbitmq:15672/api
 
 
   # Spring Boot Application Service
@@ -397,9 +397,10 @@ volumes:
 #  newrelic:
   redis_data:
   nexus_data:
+  jenkins_home:
 #  keycloak_data:
   es_data:
-#  kibana_data:
+  kibana_data:
 #  zookeeper_data:
 #  kafka_data:
   pgadmin_data:
