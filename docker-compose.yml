@@ -372,6 +372,14 @@ services:
       JBOSS_USER: admin
       JBOSS_PASSWORD: Welcome@321
       JBOSS_ROLES: admin,process-admin,rest-all,kie-server
+
+      JAVA_OPTS: >
+        -Dorg.kie.server.controller=true
+        -Dorg.kie.server.controller.user=admin
+        -Dorg.kie.server.controller.pwd=Welcome@321
+        -Dorg.kie.server.user=admin
+        -Dorg.kie.server.pwd=Welcome@321
+
     volumes:
       - bc_data:/opt/jboss/wildfly/standalone
       - ./business-central/configuration/application-users.properties:/opt/jboss/wildfly/standalone/configuration/application-users.properties
@@ -390,20 +398,27 @@ services:
       - postgres
     environment:
       KIE_SERVER_ID: kie-server-1
+      KIE_SERVER_MODE: DEVELOPMENT
+
+      # INTERNAL (Docker network)
       KIE_SERVER_LOCATION: http://kie-server:8080/kie-server/services/rest/server
+
+      # EXTERNAL (Browser / Controller / Host)
+      KIE_SERVER_EXTERNAL_URL: http://localhost:8081/kie-server/services/rest/server
 
       # Controller
       KIE_SERVER_CONTROLLER: http://business-central:8080/business-central/rest/controller
       KIE_SERVER_CONTROLLER_USER: admin
       KIE_SERVER_CONTROLLER_PWD: Welcome@321
 
+      # KIE auth
       KIE_SERVER_USER: admin
       KIE_SERVER_PASSWORD: Welcome@321
 
       # Persistence
       KIE_SERVER_PERSISTENCE_DS: java:jboss/datasources/jbpmDS
       KIE_SERVER_PERSISTENCE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
-      KIE_SERVER_PERSISTENCE_SCHEMA: update   # ⭐ critical
+      KIE_SERVER_PERSISTENCE_SCHEMA: update
 
       DATASOURCES: jbpmDS
       DATASOURCE_JNDI: java:jboss/datasources/jbpmDS
@@ -415,7 +430,6 @@ services:
       - kie_data:/opt/jboss/wildfly/standalone
       - ./business-central/configuration/application-users.properties:/opt/jboss/wildfly/standalone/configuration/application-users.properties
       - ./business-central/configuration/application-roles.properties:/opt/jboss/wildfly/standalone/configuration/application-roles.properties
-
     networks:
       - my_network
 
