@@ -400,10 +400,12 @@ services:
       KIE_SERVER_ID: kie-server-1
       KIE_SERVER_MODE: DEVELOPMENT
 
-      # INTERNAL (Docker network)
+      KIE_SERVER_SERVER_TEMPLATES: default-kieserver
+
+      # Internal Docker network URL
       KIE_SERVER_LOCATION: http://kie-server:8080/kie-server/services/rest/server
 
-      # EXTERNAL (Browser / Controller / Host)
+      # External access
       KIE_SERVER_EXTERNAL_URL: http://localhost:8081/kie-server/services/rest/server
 
       # Controller
@@ -411,7 +413,7 @@ services:
       KIE_SERVER_CONTROLLER_USER: admin
       KIE_SERVER_CONTROLLER_PWD: Welcome@321
 
-      # KIE auth
+      # Auth
       KIE_SERVER_USER: admin
       KIE_SERVER_PASSWORD: Welcome@321
 
@@ -425,13 +427,6 @@ services:
       DATASOURCE_URL: jdbc:postgresql://postgres:5432/jbpm
       DATASOURCE_USERNAME: postgres
       DATASOURCE_PASSWORD: root
-
-    volumes:
-      - kie_data:/opt/jboss/wildfly/standalone
-      - ./business-central/configuration/application-users.properties:/opt/jboss/wildfly/standalone/configuration/application-users.properties
-      - ./business-central/configuration/application-roles.properties:/opt/jboss/wildfly/standalone/configuration/application-roles.properties
-    networks:
-      - my_network
 
 volumes:
   pg_data:
