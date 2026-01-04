@@ -23,116 +23,116 @@ services:
     env_file:
       - ./postgres.env
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
-    container_name: elasticsearch
-    restart: always
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.ml.enabled=false
-      - xpack.monitoring.collection.enabled=false
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    networks:
-      - my_network
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2g
-        reservations:
-          memory: 1g
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.14.0
-    container_name: kibana
-    restart: always
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - xpack.security.enabled=false
-      - NODE_OPTIONS=--max-old-space-size=512   # limit Node.js memory usage
-    volumes:
-      - kibana_data:/usr/share/kibana/data
-    networks:
-      - my_network
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-
-  rabbitmq:
-    image: rabbitmq:3.12-management
-    container_name: rabbitmq
-    restart: always
-    hostname: rabbitmq
-    ports:
-      - '5672:5672'   # Web UI
-      - '15672:15672' # AMQP protocol
-    #    env_file:
-    #      - ./rabbit.env
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - my_network
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+#    container_name: elasticsearch
+#    restart: always
+#    environment:
+#      - discovery.type=single-node
+#      - xpack.security.enabled=false
+#      - xpack.ml.enabled=false
+#      - xpack.monitoring.collection.enabled=false
+#      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+#    ports:
+#      - "9200:9200"
+#      - "9300:9300"
+#    volumes:
+#      - es_data:/usr/share/elasticsearch/data
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '2.0'
+#          memory: 2g
+#        reservations:
+#          memory: 1g
+#
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:8.14.0
+#    container_name: kibana
+#    restart: always
+#    ports:
+#      - "5601:5601"
+#    depends_on:
+#      - elasticsearch
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - xpack.security.enabled=false
+#      - NODE_OPTIONS=--max-old-space-size=512   # limit Node.js memory usage
+#    volumes:
+#      - kibana_data:/usr/share/kibana/data
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1.0'
+#          memory: 1g
+#
+#  rabbitmq:
+#    image: rabbitmq:3.12-management
+#    container_name: rabbitmq
+#    restart: always
+#    hostname: rabbitmq
+#    ports:
+#      - '5672:5672'   # Web UI
+#      - '15672:15672' # AMQP protocol
+#    #    env_file:
+#    #      - ./rabbit.env
+#    volumes:
+#      - rabbitmq_data:/var/lib/rabbitmq
+#    networks:
+#      - my_network
+#    environment:
+#      RABBITMQ_DEFAULT_USER: guest
+#      RABBITMQ_DEFAULT_PASS: guest
 #      RABBITMQ_NODENAME: rabbit@rabbitmq
 #      RABBITMQ_DEFAULT_VHOST: public
 
-  redis:
-    image: redis:7.2-alpine # Specifies the Redis Docker image to use
-    container_name: redis # Sets a custom name for the container
-    restart: always # Ensures the container restarts automatically if it stops
-    ports:
-      - "6379:6379" # default Redis port, maps port 6379 on the host to port 6379 in the container
-    networks:
-      - my_network
-    command: redis-server --appendonly yes
-    # `--appendonly yes` enables persistence (AOF mode) so data survives container restarts.
-    volumes:
-      - redis_data:/data # Mounts a named volume for data persistence
+#  redis:
+#    image: redis:7.2-alpine # Specifies the Redis Docker image to use
+#    container_name: redis # Sets a custom name for the container
+#    restart: always # Ensures the container restarts automatically if it stops
+#    ports:
+#      - "6379:6379" # default Redis port, maps port 6379 on the host to port 6379 in the container
+#    networks:
+#      - my_network
+#    command: redis-server --appendonly yes
+#    # `--appendonly yes` enables persistence (AOF mode) so data survives container restarts.
+#    volumes:
+#      - redis_data:/data # Mounts a named volume for data persistence
 
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
-    restart: always
-    # privileged: true
-    user: root
-    ports:
-      - "8090:8080"  # Jenkins UI
-      - "50000:50000" # Agent communication
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      # - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use Docker
-    networks:
-      - my_network
+#  jenkins:
+#    image: jenkins/jenkins:lts
+#    container_name: jenkins
+#    restart: always
+#    # privileged: true
+#    user: root
+#    ports:
+#      - "8090:8080"  # Jenkins UI
+#      - "50000:50000" # Agent communication
+#    volumes:
+#      - jenkins_home:/var/jenkins_home
+#      # - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use Docker
+#    networks:
+#      - my_network
 
-  nexus:
-    image: sonatype/nexus3
-    container_name: nexus
-    restart: always
-    ports:
-      - "8081:8081"  # Nexus UI
-      - "8082:8082"  # Repository Port
-      - "5000:5000"
-    volumes:
-      - nexus_data:/nexus-data
-    networks:
-      - my_network
-    environment:
-      - INSTALL4J_ADD_VM_PARAMS=-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=1024m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
-      - NEXUS_SECURITY_RANDOMPASSWORD=false  # Disables random admin password, default: admin/admin123
+#  nexus:
+#    image: sonatype/nexus3
+#    container_name: nexus
+#    restart: always
+#    ports:
+#      - "8081:8081"  # Nexus UI
+#      - "8082:8082"  # Repository Port
+#      - "5000:5000"
+#    volumes:
+#      - nexus_data:/nexus-data
+#    networks:
+#      - my_network
+#    environment:
+#      - INSTALL4J_ADD_VM_PARAMS=-Xms512m -Xmx1024m -XX:MaxDirectMemorySize=1024m -Djava.util.prefs.userRoot=/nexus-data/javaprefs
+#      - NEXUS_SECURITY_RANDOMPASSWORD=false  # Disables random admin password, default: admin/admin123
 
 #  redis:
 #    image: redis:7.2-alpine # Specifies the Redis Docker image to use
@@ -245,34 +245,6 @@ services:
 #     - RABBIT_HOST=rabbitmq
 #     - RABBIT_PORT=5672
 #     - RABBIT_MANAGEMENT_BASE_URL=http://rabbitmq:15672/api
-
-
-  # Spring Boot Application Service
-#  http-adapter:
-#     build:
-#       context: ../../../mdo/repo/mdo-http-adapter  # Build from the current directory (where the Dockerfile is located)
-#       dockerfile: Dockerfile            # <- This is optional if named Dockerfile
-#     image: http-adapter:latest              # <- Tag image after build
-#     container_name: http-adapter
-#     restart: always  # Restart policy for the application
-#     ports:
-#       - "8088:8082"  # Map container port 8080 to host port 8088 for accessing the app
-#     networks:
-#       - my_network
-#     env_file:
-#       - ./dev-auth/dev-auth.env
-#       - ./rabbitmq.env
-#       - ./data-enrichment.env   # add this new file
-#     depends_on:
-#       - postgres
-#       - rabbitmq
-#     environment:
-#       - DATABASE_URL=jdbc:postgresql://postgres:5432/http_adapter
-#       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/http_adapter
-#       - POSTGRES_USER=postgres
-#       - POSTGRES_PASSWORD=root
-#       - RABBIT_URL=rabbitmq:15672
-#       - SPRING_RABBITMQ_HOST=rabbitmq
 
   pgadmin:
     image: dpage/pgadmin4
@@ -391,20 +363,77 @@ services:
 #      - my_network
 #    restart: unless-stopped
 
+  business-central:
+    image: quay.io/kiegroup/business-central-workbench:7.74.1.Final
+    container_name: business-central
+    ports:
+      - "8080:8080"
+    environment:
+      JBOSS_USER: admin
+      JBOSS_PASSWORD: Welcome@321
+      JBOSS_ROLES: admin,process-admin,rest-all,kie-server
+    volumes:
+      - bc_data:/opt/jboss/wildfly/standalone
+      - ./business-central/configuration/application-users.properties:/opt/jboss/wildfly/standalone/configuration/application-users.properties
+      - ./business-central/configuration/application-roles.properties:/opt/jboss/wildfly/standalone/configuration/application-roles.properties
+
+    networks:
+        - my_network
+
+  kie-server:
+    image: quay.io/kiegroup/kie-server:7.74.1.Final
+    container_name: kie-server
+    ports:
+      - "8081:8080"
+    depends_on:
+      - business-central
+      - postgres
+    environment:
+      KIE_SERVER_ID: kie-server-1
+      KIE_SERVER_LOCATION: http://kie-server:8080/kie-server/services/rest/server
+
+      # Controller
+      KIE_SERVER_CONTROLLER: http://business-central:8080/business-central/rest/controller
+      KIE_SERVER_CONTROLLER_USER: admin
+      KIE_SERVER_CONTROLLER_PWD: Welcome@321
+
+      KIE_SERVER_USER: admin
+      KIE_SERVER_PASSWORD: Welcome@321
+
+      # Persistence
+      KIE_SERVER_PERSISTENCE_DS: java:jboss/datasources/jbpmDS
+      KIE_SERVER_PERSISTENCE_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      KIE_SERVER_PERSISTENCE_SCHEMA: update   # ⭐ critical
+
+      DATASOURCES: jbpmDS
+      DATASOURCE_JNDI: java:jboss/datasources/jbpmDS
+      DATASOURCE_URL: jdbc:postgresql://postgres:5432/jbpm
+      DATASOURCE_USERNAME: postgres
+      DATASOURCE_PASSWORD: root
+
+    volumes:
+      - kie_data:/opt/jboss/wildfly/standalone
+      - ./business-central/configuration/application-users.properties:/opt/jboss/wildfly/standalone/configuration/application-users.properties
+      - ./business-central/configuration/application-roles.properties:/opt/jboss/wildfly/standalone/configuration/application-roles.properties
+
+    networks:
+      - my_network
+
 volumes:
   pg_data:
-  rabbitmq_data:
+#  rabbitmq_data:
 #  newrelic:
-  redis_data:
-  nexus_data:
-  jenkins_home:
+#  redis_data:
+#  nexus_data:
+#  jenkins_home:
 #  keycloak_data:
-  es_data:
-  kibana_data:
+#  es_data:
+#  kibana_data:
 #  zookeeper_data:
 #  kafka_data:
   pgadmin_data:
 #  mongo_data:
 #  prometheus_data:  # Volume for Prometheus metrics storage
 #  grafana_data:  # Volume for Grafana dashboards & config
-
+  bc_data:
+  kie_data:
