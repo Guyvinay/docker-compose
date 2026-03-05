@@ -475,6 +475,8 @@ services:
     container_name: wso2-identity-server
     ports:
       - "9443:9443"
+    volumes:
+      - wso2_data:/home/wso2carbon/wso2is-*/repository
     networks:
       - my_network
 
@@ -497,3 +499,6 @@ volumes:
 #  grafana_data:  # Volume for Grafana dashboards & config
 #  bc_data:
 #  kie_data:
+  ldap_data:
+  ldap_config:
+  wso2_data:
