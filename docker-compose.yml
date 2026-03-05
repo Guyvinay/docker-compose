@@ -445,6 +445,40 @@ services:
 #      DATASOURCE_USERNAME: postgres
 #      DATASOURCE_PASSWORD: root
 
+  ldap:
+    image: osixia/openldap:1.5.0
+    container_name: ldap-server
+    environment:
+      LDAP_ORGANISATION: "dev.corp"
+      LDAP_DOMAIN: "dev.com"
+      LDAP_ADMIN_PASSWORD: "admin"
+    ports:
+      - "389:389"
+    networks:
+      - my_network
+
+  phpldapadmin:
+    image: osixia/phpldapadmin
+    container_name: ldap-ui
+    ports:
+      - "8089:80"
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap-server
+      PHPLDAPADMIN_HTTPS: "false"
+    depends_on:
+      - ldap
+    networks:
+      - my_network
+
+  wso2is:
+    image: wso2/wso2is:latest
+    container_name: wso2-identity-server
+    ports:
+      - "9443:9443"
+    networks:
+      - my_network
+
+
 volumes:
   pg_data:
   pgadmin_data:
