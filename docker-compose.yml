@@ -118,25 +118,25 @@ services:
           cpus: '0.4'
           memory: 400m
 
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: jenkins
-    restart: always
-    # privileged: true
-    user: root
-    ports:
-      - "8090:8080"  # Jenkins UI
-      - "50000:50000" # Agent communication
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      # - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use Docker
-    networks: # login username: guyvinay, password: Welcome@123
-      - my_network
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 600m
+#  jenkins:
+#    image: jenkins/jenkins:lts
+#    container_name: jenkins
+#    restart: always
+#    # privileged: true
+#    user: root
+#    ports:
+#      - "8090:8080"  # Jenkins UI
+#      - "50000:50000" # Agent communication
+#    volumes:
+#      - jenkins_home:/var/jenkins_home
+#      # - /var/run/docker.sock:/var/run/docker.sock # Allow Jenkins to use Docker
+#    networks: # login username: guyvinay, password: Welcome@123
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1.0'
+#          memory: 600m
 
   nexus:
     image: sonatype/nexus3
@@ -257,29 +257,29 @@ services:
 #     - RABBIT_HOST=rabbitmq
 #     - RABBIT_PORT=5672
 #     - RABBIT_MANAGEMENT_BASE_URL=http://rabbitmq:15672/api
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    restart: always
-    ports:
-      - '5050:80'
-    depends_on:
-      - postgres
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - my_network
-    environment:
-      PGADMIN_DEFAULT_EMAIL: dot@pg.com
-      PGADMIN_DEFAULT_PASSWORD: dot
-    env_file:
-      - ./pgadmin.env
-    deploy:
-      resources:
-        limits:
-          cpus: '0.4'
-          memory: 400m
+#
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    container_name: pgadmin
+#    restart: always
+#    ports:
+#      - '5050:80'
+#    depends_on:
+#      - postgres
+#    volumes:
+#      - pgadmin_data:/var/lib/pgadmin
+#    networks:
+#      - my_network
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: dot@pg.com
+#      PGADMIN_DEFAULT_PASSWORD: dot
+#    env_file:
+#      - ./pgadmin.env
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.4'
+#          memory: 400m
 
 #  mongo:
 #    image: mongo:latest
@@ -445,40 +445,55 @@ services:
 #      DATASOURCE_USERNAME: postgres
 #      DATASOURCE_PASSWORD: root
 
-  ldap:
-    image: osixia/openldap:1.5.0
-    container_name: ldap-server
-    environment:
-      LDAP_ORGANISATION: "dev.corp"
-      LDAP_DOMAIN: "dev.com"
-      LDAP_ADMIN_PASSWORD: "admin"
-    ports:
-      - "389:389"
-    networks:
-      - my_network
-
-  phpldapadmin:
-    image: osixia/phpldapadmin
-    container_name: ldap-ui
-    ports:
-      - "8089:80"
-    environment:
-      PHPLDAPADMIN_LDAP_HOSTS: ldap-server
-      PHPLDAPADMIN_HTTPS: "false"
-    depends_on:
-      - ldap
-    networks:
-      - my_network
-
-  wso2is:
-    image: wso2/wso2is:latest
-    container_name: wso2-identity-server
-    ports:
-      - "9443:9443"
-    volumes:
-      - wso2_data:/home/wso2carbon/wso2is-*/repository
-    networks:
-      - my_network
+#  ldap:
+#    image: osixia/openldap:1.5.0
+#    container_name: ldap-server
+#    environment:
+#      LDAP_ORGANISATION: "dev.corp"
+#      LDAP_DOMAIN: "dev.com"
+#      LDAP_ADMIN_PASSWORD: "admin"
+#    ports:
+#      - "389:389"
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.6'
+#          memory: 600m
+#
+#  phpldapadmin:
+#    image: osixia/phpldapadmin
+#    container_name: ldap-ui
+#    ports:
+#      - "8089:80"
+#    environment:
+#      PHPLDAPADMIN_LDAP_HOSTS: ldap-server
+#      PHPLDAPADMIN_HTTPS: "false"
+#    depends_on:
+#      - ldap
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.6'
+#          memory: 600m
+#
+#  wso2is:
+#    image: wso2/wso2is:latest
+#    container_name: wso2-identity-server
+#    ports:
+#      - "9443:9443"
+#    volumes:
+#      - wso2_data:/home/wso2carbon/wso2is-*/repository
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.6'
+#          memory: 1000m
 
 
 volumes:
@@ -488,7 +503,7 @@ volumes:
 #  newrelic:
   redis_data:
   nexus_data:
-  jenkins_home:
+#  jenkins_home:
   es_data:
   kibana_data:
 #  keycloak_data:
@@ -499,6 +514,6 @@ volumes:
 #  grafana_data:  # Volume for Grafana dashboards & config
 #  bc_data:
 #  kie_data:
-  ldap_data:
-  ldap_config:
-  wso2_data:
+#  ldap_data:
+#  ldap_config:
+#  wso2_data:
