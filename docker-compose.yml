@@ -258,28 +258,28 @@ services:
 #     - RABBIT_PORT=5672
 #     - RABBIT_MANAGEMENT_BASE_URL=http://rabbitmq:15672/api
 #
-#  pgadmin:
-#    image: dpage/pgadmin4
-#    container_name: pgadmin
-#    restart: always
-#    ports:
-#      - '5050:80'
-#    depends_on:
-#      - postgres
-#    volumes:
-#      - pgadmin_data:/var/lib/pgadmin
-#    networks:
-#      - my_network
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: dot@pg.com
-#      PGADMIN_DEFAULT_PASSWORD: dot
-#    env_file:
-#      - ./pgadmin.env
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.4'
-#          memory: 400m
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - '5050:80'
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - my_network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dot@pg.com
+      PGADMIN_DEFAULT_PASSWORD: dot
+    env_file:
+      - ./pgadmin.env
+    deploy:
+      resources:
+        limits:
+          cpus: '0.4'
+          memory: 400m
 
 #  mongo:
 #    image: mongo:latest
@@ -444,14 +444,15 @@ services:
 #      DATASOURCE_URL: jdbc:postgresql://postgres:5432/jbpm
 #      DATASOURCE_USERNAME: postgres
 #      DATASOURCE_PASSWORD: root
-
+#
 #  ldap:
 #    image: osixia/openldap:1.5.0
-#    container_name: ldap-server
+#    container_name: ldap
 #    environment:
-#      LDAP_ORGANISATION: "dev.corp"
-#      LDAP_DOMAIN: "dev.com"
-#      LDAP_ADMIN_PASSWORD: "admin"
+#      LDAP_ORGANISATION: "dev"
+#      LDAP_DOMAIN: "dev.local"
+#      LDAP_BASE_DN: "dc=dev,dc=local" # dn = cn=admin,dc=dev,dc=local
+#      LDAP_ADMIN_PASSWORD: "admin"    # admin
 #    ports:
 #      - "389:389"
 #    networks:
@@ -461,7 +462,7 @@ services:
 #        limits:
 #          cpus: '0.6'
 #          memory: 600m
-#
+
 #  phpldapadmin:
 #    image: osixia/phpldapadmin
 #    container_name: ldap-ui
@@ -494,7 +495,75 @@ services:
 #        limits:
 #          cpus: '0.6'
 #          memory: 1000m
+#
+#  n8n:
+#    image: docker.n8n.io/n8nio/n8n:latest
+#    container_name: n8n
+#    restart: unless-stopped
+#    ports:
+#      - "5678:5678"
+#    networks:
+#      - my_network
+#    depends_on:
+#      - postgres
+#    volumes:
+#      - n8n_data:/home/node/.n8n
+#    environment:
+#      DB_TYPE: postgresdb
+#      DB_POSTGRESDB_HOST: postgres
+#      DB_POSTGRESDB_PORT: 5432
+#      DB_POSTGRESDB_DATABASE: n8n
+#      DB_POSTGRESDB_USER: postgres
+#      DB_POSTGRESDB_PASSWORD: root
+#
+#      # Keep simple for now
+#      N8N_HOST: n8n
+#      N8N_PORT: 5678
+#      N8N_PROTOCOL: http
+#
+#      GENERIC_TIMEZONE: Asia/Kolkata
+#    deploy:
+#      resources:
+#        limits:
+#          memory: 512m
+#          cpus: '0.5'
 
+  # =========================
+  # Observability Stack
+  # =========================
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.102.0
+    command: ["--config=/etc/otel-collector-config.yml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "16686:16686"  # UI
+      - "14250:14250"
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  loki:
+    image: grafana/loki:2.9.8
+    ports:
+      - "3100:3100"
+
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
 
 volumes:
   pg_data:
