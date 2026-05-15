@@ -528,35 +528,52 @@ services:
 #          memory: 512m
 #          cpus: '0.5'
 
-  # =========================
-  # Observability Stack
-  # =========================
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.102.0
     command: ["--config=/etc/otel-collector-config.yml"]
     volumes:
-      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml:ro
     ports:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
+    networks:
+      - my_network
+    restart: unless-stopped
+    depends_on:
+      - jaeger
+      - prometheus
+      - loki
 
   jaeger:
     image: jaegertracing/all-in-one:1.57
     ports:
       - "16686:16686"  # UI
-      - "14250:14250"
+      - "14250:14250"  # gRPC
+    networks:
+      - my_network
+    restart: unless-stopped
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v2.52.0
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
     ports:
       - "9090:9090"
+    networks:
+      - my_network
+    restart: unless-stopped
 
   loki:
     image: grafana/loki:2.9.8
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki_data:/loki
     ports:
       - "3100:3100"
+    networks:
+      - my_network
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:10.4.2
@@ -564,7 +581,14 @@ services:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
-
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - my_network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
 volumes:
   pg_data:
   pgadmin_data:
@@ -575,6 +599,9 @@ volumes:
 #  jenkins_home:
   es_data:
   kibana_data:
+  prometheus_data:
+  loki_data:
+  grafana_data:
 #  keycloak_data:
 #  zookeeper_data:
 #  kafka_data:
