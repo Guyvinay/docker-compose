@@ -5,7 +5,7 @@ networks:
 services:
 
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     container_name: postgres
     restart: always # | unless-stopped
     ports:
@@ -27,53 +27,53 @@ services:
         limits:
           memory: 600m
           cpus: '1.0'
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
-    container_name: elasticsearch
-    restart: always
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - xpack.ml.enabled=false
-      - xpack.monitoring.collection.enabled=false
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    volumes:
-      - es_data:/usr/share/elasticsearch/data
-    networks:
-      - my_network
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 1g
-        reservations:
-          memory: 600m
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.14.0
-    container_name: kibana
-    restart: always
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - xpack.security.enabled=false
-      - NODE_OPTIONS=--max-old-space-size=512   # limit Node.js memory usage
-    volumes:
-      - kibana_data:/usr/share/kibana/data
-    networks:
-      - my_network
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 600m
+#
+#  elasticsearch:
+#    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+#    container_name: elasticsearch
+#    restart: always
+#    environment:
+#      - discovery.type=single-node
+#      - xpack.security.enabled=false
+#      - xpack.ml.enabled=false
+#      - xpack.monitoring.collection.enabled=false
+#      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+#    ports:
+#      - "9200:9200"
+#      - "9300:9300"
+#    volumes:
+#      - es_data:/usr/share/elasticsearch/data
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1.0'
+#          memory: 1g
+#        reservations:
+#          memory: 600m
+#
+#  kibana:
+#    image: docker.elastic.co/kibana/kibana:8.14.0
+#    container_name: kibana
+#    restart: always
+#    ports:
+#      - "5601:5601"
+#    depends_on:
+#      - elasticsearch
+#    environment:
+#      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+#      - xpack.security.enabled=false
+#      - NODE_OPTIONS=--max-old-space-size=512   # limit Node.js memory usage
+#    volumes:
+#      - kibana_data:/usr/share/kibana/data
+#    networks:
+#      - my_network
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '1.0'
+#          memory: 600m
 
   rabbitmq:
     image: rabbitmq:3.12-management
@@ -258,28 +258,28 @@ services:
 #     - RABBIT_PORT=5672
 #     - RABBIT_MANAGEMENT_BASE_URL=http://rabbitmq:15672/api
 #
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
-    restart: always
-    ports:
-      - '5050:80'
-    depends_on:
-      - postgres
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    networks:
-      - my_network
-    environment:
-      PGADMIN_DEFAULT_EMAIL: dot@pg.com
-      PGADMIN_DEFAULT_PASSWORD: dot
-    env_file:
-      - ./pgadmin.env
-    deploy:
-      resources:
-        limits:
-          cpus: '0.4'
-          memory: 400m
+#  pgadmin:
+#    image: dpage/pgadmin4
+#    container_name: pgadmin
+#    restart: always
+#    ports:
+#      - '5050:80'
+#    depends_on:
+#      - postgres
+#    volumes:
+#      - pgadmin_data:/var/lib/pgadmin
+#    networks:
+#      - my_network
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: dot@pg.com
+#      PGADMIN_DEFAULT_PASSWORD: dot
+#    env_file:
+#      - ./pgadmin.env
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: '0.4'
+#          memory: 400m
 
 #  mongo:
 #    image: mongo:latest
@@ -536,60 +536,58 @@ services:
     ports:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
+      - "9464:9464"
     networks:
       - my_network
     restart: unless-stopped
-#    depends_on:
-#      - jaeger
-#      - prometheus
-#      - loki
-#
-#  jaeger:
-#    image: jaegertracing/all-in-one:1.57
-#    ports:
-#      - "16686:16686"  # UI
-#      - "14250:14250"  # gRPC
-#    networks:
-#      - my_network
-#    restart: unless-stopped
-#
-#  prometheus:
-#    image: prom/prometheus:v2.52.0
-#    volumes:
-#      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
-#      - prometheus_data:/prometheus
-#    ports:
-#      - "9090:9090"
-#    networks:
-#      - my_network
-#    restart: unless-stopped
-#
-#  loki:
-#    image: grafana/loki:2.9.8
-#    command: -config.file=/etc/loki/local-config.yaml
-#    volumes:
-#      - loki_data:/loki
-#    ports:
-#      - "3100:3100"
-#    networks:
-#      - my_network
-#    restart: unless-stopped
-#
-#  grafana:
-#    image: grafana/grafana:10.4.2
-#    ports:
-#      - "3000:3000"
-#    environment:
-#      - GF_SECURITY_ADMIN_PASSWORD=admin
-#    volumes:
-#      - grafana_data:/var/lib/grafana
-#    networks:
-#      - my_network
-#    restart: unless-stopped
-#    depends_on:
-#      - prometheus
-#      - loki
-#
+    depends_on:
+      - jaeger
+      - prometheus
+      - loki
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "16686:16686"  # UI
+      - "14250:14250"  # gRPC
+    networks:
+      - my_network
+    restart: unless-stopped
+  prometheus:
+    image: prom/prometheus:v2.52.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - my_network
+    restart: unless-stopped
+  loki:
+    image: grafana/loki:2.9.8
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
+    networks:
+      - my_network
+    restart: unless-stopped
+  grafana:
+    image: grafana/grafana:10.4.2
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - my_network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+      - loki
+
+
 #  localstack:
 #    image: localstack/localstack:3.8
 #    container_name: localstack
@@ -602,16 +600,20 @@ services:
 #
 #    volumes:
 #      - localstack_data:/var/lib/localstack
+
 volumes:
   pg_data:
-  pgadmin_data:
+#  pgadmin_data:
   rabbitmq_data:
 #  newrelic:
   redis_data:
   nexus_data:
+  prometheus_data:
+  loki_data:
+  grafana_data:
 #  jenkins_home:
-  es_data:
-  kibana_data:
+#  es_data:
+#  kibana_data:
 #  localstack_data:
 #  prometheus_data:
 #  loki_data:
